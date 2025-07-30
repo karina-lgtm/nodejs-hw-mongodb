@@ -1,8 +1,10 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
-import pinoHttp from 'pino-http';
-import pino from 'pino';
 import cors from 'cors';
-import 'dotenv/config';
+import pino from 'pino';
+import pinoHttp from 'pino-http';
 
 import { getEnvVariable } from './utils/getEnvVar.js';
 import contactsRouter from './routers/contacts.js';
@@ -14,9 +16,11 @@ const PORT = getEnvVariable('PORT') || 5150;
 export const setupServer = () => {
   const app = express();
 
+  // Middleware
   app.use(express.json());
   app.use(cors());
 
+  // Логер
   const logger = pino({
     transport: {
       target: 'pino-pretty',
@@ -24,16 +28,21 @@ export const setupServer = () => {
   });
   app.use(pinoHttp({ logger }));
 
-  app.use(contactsRouter);
+  // Роутер
+  app.use('/contacts', contactsRouter);
 
+  // Обробка 404
   app.use(notFoundHandler);
 
+  // Обробка помилок
   app.use(errorHandler);
 
-  app.listen(PORT, (error) => {
-    if (error) {
-      throw error;
+  // Запуск сервера
+  app.listen(PORT, (err) => {
+    if (err) {
+      console.error('❌ Server error:', err.message);
+      process.exit(1);
     }
-    logger.info(`Server is runing on port ${PORT}`);
+    logger.info(`✅ Server is running on port ${PORT}`);
   });
 };
