@@ -17,23 +17,30 @@ export const setupServer = () => {
   app.use(express.json());
   app.use(cors());
 
-  const logger = pino({
-    transport: {
-      target: 'pino-pretty',
-    },
-  });
+  const isDev = process.env.NODE_ENV !== 'production';
+
+  const logger = isDev
+    ? pino({
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+          },
+        },
+      })
+    : pino(); 
+
   app.use(pinoHttp({ logger }));
 
   app.use(contactsRouter);
 
   app.use(notFoundHandler);
-
   app.use(errorHandler);
 
   app.listen(PORT, (error) => {
     if (error) {
       throw error;
     }
-    logger.info(`Server is runing on port ${PORT}`);
+    logger.info(`Server is running on port ${PORT}`);
   });
 };
