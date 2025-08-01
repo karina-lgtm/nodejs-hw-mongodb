@@ -7,7 +7,7 @@ dotenv.config();
 export const initMongoDB = async () => {
   try {
     const user = process.env.MONGODB_USER;
-    const pwd = process.env.MONGOBD_PASSWORD;
+    const pwd = process.env.MONGODB_PASSWORD;
     const url = process.env.MONGODB_URL;
     const db = process.env.MONGODB_DB;
     await mongoose.connect(
