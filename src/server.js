@@ -1,15 +1,16 @@
 import express from 'express';
-import pinoHttp from 'pino-http';
-import pino from 'pino';
 import cors from 'cors';
+import pino from 'pino';
+import pinoHttp from 'pino-http';
 import 'dotenv/config';
 
 import { getEnvVariable } from './utils/getEnvVar.js';
 import contactsRouter from './routers/contacts.js';
+import authRouter from './routers/auth.js'; 
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
 
-const PORT = getEnvVariable('PORT') || 5150;
+const PORT = getEnvVariable('PORT') || 3000;
 
 export const setupServer = () => {
   const app = express();
@@ -17,31 +18,21 @@ export const setupServer = () => {
   app.use(express.json());
   app.use(cors());
 
-  const isDev = process.env.NODE_ENV === 'development';
-
-  const logger = isDev
-    ? pino({
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-          },
-        },
-      })
-    : pino(); // для Render
-
+  const logger = pino();
   app.use(pinoHttp({ logger }));
 
-  app.use(contactsRouter);
+  app.use('/api/contacts', contactsRouter);
+  app.use('/api/auth', authRouter);
+
+ 
+  app.get('/', (req, res) => {
+    res.json({ message: 'API is working 🎉' });
+  });
 
   app.use(notFoundHandler);
-
   app.use(errorHandler);
 
-  app.listen(PORT, (error) => {
-    if (error) {
-      throw error;
-    }
+  app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT}`);
   });
 };
